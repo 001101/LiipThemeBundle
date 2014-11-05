@@ -130,6 +130,23 @@ class FileLocator extends BaseFileLocator
         // update the paths if the theme changed since the last lookup
         $theme = $this->activeTheme->getName();
 
+        if ($theme !== null) {
+            return $this->locateInTheme($name, $theme, $dir, $first);
+        } else {
+            foreach ($this->activeTheme->getThemes() as $theme) {
+                try {
+                    return $this->locateInTheme($name, $theme, $dir, $first);
+                } catch (\InvalidArgumentException $ex) {
+                    // ignore
+                }
+            }
+        }
+
+        throw new \InvalidArgumentException(sprintf('Unable to find file "%s".', $name));
+    }
+
+    private function locateInTheme($name, $theme, $dir = null, $first = null)
+    {
         if ($this->lastTheme !== $theme) {
             $this->setCurrentTheme($theme, $this->activeTheme->getDeviceType());
         }
